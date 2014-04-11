@@ -15,6 +15,7 @@ import uuid
 from dateutil.parser import parse as parse_datetime
 from sqlalchemy import Date
 from sqlalchemy import DateTime
+from sqlalchemy import Integer
 from sqlalchemy import Interval
 from sqlalchemy.exc import NoInspectionAvailable
 from sqlalchemy.exc import OperationalError
@@ -176,6 +177,14 @@ def is_date_field(model, fieldname):
     """
     fieldtype = get_field_type(model, fieldname)
     return isinstance(fieldtype, Date) or isinstance(fieldtype, DateTime)
+
+
+def is_integer_field(model, fieldname):
+    """Returns ``True`` if and only if the field of `model` with the specified
+    name corresponds to a :class:`int` object.
+    """
+    fieldtype = get_field_type(model, fieldname)
+    return isinstance(fieldtype, Integer)
 
 
 def is_interval_field(model, fieldname):
@@ -457,6 +466,8 @@ def query_by_primary_key(session, model, primary_key_value, primary_key=None):
     """
     pk_name = primary_key or primary_key_name(model)
     query = session_query(session, model)
+    if is_integer_field(model, pk_name):
+        primary_key_value = int(primary_key_value)
     return query.filter(getattr(model, pk_name) == primary_key_value)
 
 
